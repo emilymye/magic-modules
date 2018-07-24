@@ -30,6 +30,14 @@ module Api
       # will be used. This currently can only be used with Terraform resources.
       # TODO(#302): Add support for the other providers.
       attr_reader :update_url
+      # URL to use for creating the resource. If not specified, the
+      # collection url (when create_verb is default or :POST) or
+      # self_link (create_verb is :PUT)
+      attr_reader :create_url
+      # URL to use to delete the resource. If not specified, self link is used.
+      # This should only be used when the delete call is different than
+      # the actual self_link and self_link_query cannot be used.
+      attr_reader :delete_url
       attr_reader :self_link
       # This is useful in case you need to change the query made for
       # GET/DELETE requests only.  In particular, this is often used
@@ -50,6 +58,7 @@ module Api
       attr_reader :references
       attr_reader :create_verb
       attr_reader :update_verb
+      attr_reader :delete_verb
       attr_reader :input # If true, resource is not updatable as a whole unit
       attr_reader :min_version # Minimum API version this resource is in
     end
@@ -227,6 +236,8 @@ module Api
       check_optional_property :async, Api::Async
       check_optional_property :base_url, String
       check_optional_property :update_url, String
+      check_optional_property :create_url, String
+      check_optional_property :delete_url, String
       check_property :description, String
       check_optional_property :exclude, :boolean
       check_optional_property :kind, String
@@ -242,6 +253,7 @@ module Api
       check_property :properties, Array unless @exclude
 
       check_property_oneof_default :create_verb, %i[POST PUT], :POST, Symbol
+      check_property_oneof_default :delete_verb, %i[POST DELETE], :DELETE, Symbol
       check_property_oneof_default \
         :update_verb, %i[POST PUT PATCH], :PUT, Symbol
       check_optional_property :input, :boolean
