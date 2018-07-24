@@ -429,6 +429,32 @@ module Provider
       build_url(product_url, resource_url)
     end
 
+    def delete_url(resource)
+      if resource.delete_url.nil?
+        self_link_url(resource)
+      else
+        base_url = resource.__product.base_url.split("\n").map(&:strip).compact
+        delete_url = resource.delete_url.split("\n").map(&:strip).compact
+        build_url(base_url, delete_url)
+      end
+    end
+
+    def create_url(resource)
+      if resource.create_url.nil?
+        if resource.create_verb.nil? || resource.create_verb == :POST
+          collection_url(resource)
+        elsif resource.create_verb == :PUT
+          self_link_url(resource)
+        else
+          raise "create_verb #{resource.create_verb} not supported"
+        end
+      else
+        product_url = resource.__product.base_url.split("\n").map(&:strip).compact
+        create_url = resource.create_url.split("\n").map(&:strip).compact
+        build_url(product_url, create_url)
+      end
+    end
+
     def extract_variables(template)
       template.scan(/{{[^}]*}}/)
               .map { |v| v.gsub(/{{([^}]*)}}/, '\1') }
