@@ -97,6 +97,10 @@ func resourceComputeBackendService() *schema.Resource {
 							Type:     schema.TypeFloat,
 							Optional: true,
 						},
+						"max_rate_per_endpoint": &schema.Schema{
+							Type:     schema.TypeFloat,
+							Optional: true,
+						},
 						"max_connections": &schema.Schema{
 							Type:     schema.TypeInt,
 							Optional: true,
@@ -482,6 +486,12 @@ func expandBackends(configured []interface{}) ([]*computeBeta.Backend, error) {
 				b.NullFields = append(b.NullFields, "MaxRatePerInstance")
 			}
 		}
+		if v, ok := data["max_rate_per_endpoint"]; ok {
+			b.MaxRatePerEndpoint = v.(float64)
+			if b.MaxRatePerEndpoint == 0 {
+				b.NullFields = append(b.NullFields, "MaxRatePerEndpoint")
+			}
+		}
 		if v, ok := data["max_connections"]; ok {
 			b.MaxConnections = int64(v.(int))
 			if b.MaxConnections == 0 {
@@ -517,6 +527,7 @@ func flattenBackends(backends []*computeBeta.Backend) []map[string]interface{} {
 		data["group"] = ConvertSelfLinkToV1(b.Group)
 		data["max_rate"] = b.MaxRate
 		data["max_rate_per_instance"] = b.MaxRatePerInstance
+		data["max_rate_per_endpoint"] = b.MaxRatePerEndpoint
 		data["max_connections"] = b.MaxConnections
 		data["max_connections_per_instance"] = b.MaxConnectionsPerInstance
 		data["max_utilization"] = b.MaxUtilization
