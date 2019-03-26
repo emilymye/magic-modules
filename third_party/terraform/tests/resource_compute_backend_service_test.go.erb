@@ -623,6 +623,44 @@ func TestAccComputeBackendService_withMaxConnectionsPerInstance(t *testing.T) {
 }
 
 <% unless version == 'ga' -%>
+func TestAccComputeBackendService_withMaxRatePerEndpoint(t *testing.T) {
+	t.Parallel()
+
+	serviceName := fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	negName := fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	networkName := fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+	checkName := fmt.Sprintf("tf-test-%s", acctest.RandString(10))
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		CheckDestroy: testAccCheckComputeBackendServiceDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccComputeBackendService_withMaxRatePerEndpoint(
+					serviceName, igName, itName, checkName, 5),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"google_compute_backend_service.lipsum", "backend.0.max_rate_per_endpoint", "5"),
+				),
+			},
+			{
+				Config: testAccComputeBackendService_withMaxRatePerEndpoint(
+					serviceName, igName, itName, checkName, 10),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"google_compute_backend_service.lipsum", "backend.0.max_rate_per_endpoint", "10"),
+				),
+			},
+			{
+				ResourceName:      "google_compute_backend_service.lipsum",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccComputeBackendService_withCustomHeaders(t *testing.T) {
 	t.Parallel()
 
@@ -1078,6 +1116,57 @@ resource "google_compute_health_check" "default" {
 }
 
 <% unless version == 'ga' -%>
+func testAccComputeBackendService_withMaxRatePerEndpoint(
+	serviceName, negName, networkName, checkName string, maxRate int64) string {
+	return fmt.Sprintf(`
+data "google_compute_image" "my_image" {
+  family  = "debian-9"
+  project = "debian-cloud"
+}
+
+resource "google_compute_backend_service" "lipsum" {
+  name        = "%s"
+  description = "Hello World 1234"
+  port_name   = "http"
+  protocol    = "TCP"
+
+  backend {
+    group = "${google_compute_network_endpoint_group.neg.self_link}"
+		balancing_mode = "RATE"
+    max_rate_per_endpoint = %d
+  }
+
+  health_checks = ["${google_compute_health_check.default.self_link}"]
+}
+
+resource "google_compute_network_endpoint_group" "neg" {
+  name         = "%s"
+  network      = "${google_compute_network.default.self_link}"
+  subnetwork   = "${google_compute_subnetwork.default.self_link}"
+  default_port = "90"
+  zone         = "us-central1-a"
+}
+
+resource "google_compute_network" "default" {
+  name = "%s"
+}
+
+resource "google_compute_subnetwork" "default" {
+  name          = "sub%s"
+  ip_cidr_range = "10.0.0.0/16"
+  region        = "us-central1"
+  network       = "${google_compute_network.default.self_link}"
+}
+
+resource "google_compute_health_check" "default" {
+  name               = "%s"
+  tcp_health_check {
+      port = "110"
+  }
+}
+`, serviceName, maxRate, negName, networkName, networkName, checkName)
+}
+
 func testAccComputeBackendService_withCustomHeaders(serviceName, checkName string) string {
 	return fmt.Sprintf(`
 resource "google_compute_backend_service" "foobar" {
