@@ -1792,6 +1792,7 @@ objects:
         values:
           - :INTERNAL
           - :EXTERNAL
+        default_value: :EXTERNAL
       - !ruby/object:Api::Type::String
         name: 'name'
         description: |
@@ -2201,6 +2202,7 @@ objects:
         values:
           - :INTERNAL_SELF_MANAGED
           - :EXTERNAL
+        default_value: :EXTERNAL
       - !ruby/object:Api::Type::String
         name: 'name'
         description: |
