@@ -229,31 +229,28 @@ func ResourceMap() map[string]*schema.Resource {
 func ResourceMapWithErrors() (map[string]*schema.Resource, error) {
 	return mergeResourceMaps(
 			map[string]*schema.Resource{
+<% products.each do |product| -%>
 <%
-products.each do |product|
-  product_definition = product[:definitions]
-  config = product[:overrides]
-  product_definition.objects.reject { |r| r.exclude || r.not_in_version?(product_definition.version_obj_or_closest(version)) }.each do |object|
-    if config.legacy_name.nil?
-     terraform_name = "google_" + (product_definition.name + object.name).underscore
-    else
-     terraform_name = "google_" + config.legacy_name + '_' + object.name.underscore
-    end
+ 	product_definition = product[:definitions]
+ 	config = product[:overrides]
 -%>
+<%	product_definition.objects.each do |object|
+  next if object.exclude || object.not_in_version?(product_definition.version_obj_or_closest(version))
+  tf_product = (config.legacy_name || product_definition.name).underscore
+  tf_resource = (object.legacy_name || object.name).underscore
+  terraform_name = "google_#{tf_product}_#{tf_resource}"
+-%>
+<% unless object.exclude_resource -%>
 	"<%= terraform_name -%>": resource<%= product_definition.name + object.name -%>(),
-<%
-    iam_policy = object&.iam_policy
-    unless iam_policy.nil? || iam_policy.exclude
-      iam_class_name = product_definition.name + object.name
--%>
+<% end # unless object.skip_resource-%>
+<% unless object&.iam_policy.nil? || object&.iam_policy.exclude -%>
+	<% iam_class_name = product_definition.name + object.name -%>
 	"<%= terraform_name -%>_iam_binding":              ResourceIamBinding(<%= iam_class_name -%>IamSchema, <%= iam_class_name -%>IamUpdaterProducer, <%= iam_class_name -%>IdParseFunc),
 	"<%= terraform_name -%>_iam_member":               ResourceIamMember(<%= iam_class_name -%>IamSchema, <%= iam_class_name -%>IamUpdaterProducer, <%= iam_class_name -%>IdParseFunc),
 	"<%= terraform_name -%>_iam_policy":               ResourceIamPolicy(<%= iam_class_name -%>IamSchema, <%= iam_class_name -%>IamUpdaterProducer, <%= iam_class_name -%>IdParseFunc),
-<%
-    end
-  end
-end
--%>
+<% end # unless object&.iam_policy&.exclude -%>
+<% end # product_definition.objects.each -%>
+<% end # products.each do -%>
 			},
 			map[string]*schema.Resource{
 				"google_app_engine_application":                resourceAppEngineApplication(),

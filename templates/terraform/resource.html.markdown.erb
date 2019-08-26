@@ -36,11 +36,9 @@
     directly inserted from YAML.
 -%>
 <%
-  if @config.legacy_name.nil?
-    terraform_name = "google_" + (product_ns + object.name).underscore
-  else
-    terraform_name = "google_" + @config.legacy_name + '_' + object.name.underscore
-  end
+  tf_product = (@config.legacy_name || product_ns).underscore
+  tf_resource = (object.legacy_name || object.name).underscore
+  terraform_name = "google_#{tf_product}_#{tf_resource}"
   properties = object.all_user_properties
   timeouts = object.async.nil? ? Api::Timeouts.new : object.timeouts
 -%>
