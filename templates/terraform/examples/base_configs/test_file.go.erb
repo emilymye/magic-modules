@@ -14,8 +14,8 @@ raise 'skip_test should be true if resource is not importable' \
   if object.exclude_import
 resource_name = product_ns + object.name
 tf_product = (@config.legacy_name || product_ns).underscore
-tf_resource = (object.legacy_name || object.name).underscore
-terraform_name = "google_#{tf_product}_#{tf_resource}"
+tf_resource = object.name.underscore
+terraform_name = object.legacy_name || "google_#{tf_product}_#{tf_resource}"
 %>
 <%
 # @api.version_obj_or_closest(version) is slightly wrong; we want the _object_ version or the generation version.

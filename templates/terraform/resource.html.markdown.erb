@@ -35,10 +35,9 @@
     is generated from a ruby function, but skip it on anything that is
     directly inserted from YAML.
 -%>
-<%
+<% 
   tf_product = (@config.legacy_name || product_ns).underscore
-  tf_resource = (object.legacy_name || object.name).underscore
-  terraform_name = "google_#{tf_product}_#{tf_resource}"
+  terraform_name = object.legacy_name || "google_#{tf_product}_#{object.name.underscore}"
   properties = object.all_user_properties
   timeouts = object.async.nil? ? Api::Timeouts.new : object.timeouts
 -%>

@@ -24,8 +24,9 @@ module Overrides
     class ResourceOverride < Overrides::ResourceOverride
       def self.attributes
         [
-          # If non-empty, overrides the given resource name.
-          # Use Provider::Terraform::Config.legacy_name to override
+          # If non-empty, overrides the full given resource name.
+          # i.e. 'google_project' for resourcemanager.Project
+          # Use Provider::Terraform::Config.legacy_name to override just
           # product name.
           :legacy_name,
 
