@@ -34,10 +34,9 @@ func flattenNested<%= resource_name -%>(d *schema.ResourceData, meta interface{}
 }
 
 func resource<%=resource_name%>FindNestedObjectInList(d *schema.ResourceData, meta interface{}, items []interface{}) (index int, item map[string]interface{}, err error) {
-  config := meta.(*Config)
   <% object.identity.each do |id_prop| -%>
   <%   if settable_properties.include?(id_prop) -%>
-  expected<%= titlelize_property(id_prop) -%>, err := expand<%= resource_name -%><%= titlelize_property(id_prop) -%>(d.Get("<%= id_prop.name.underscore -%>"), d, config)
+  expected<%= titlelize_property(id_prop) -%>, err := expand<%= resource_name -%><%= titlelize_property(id_prop) -%>(d.Get("<%= id_prop.name.underscore -%>"), d, meta.(*Config))
   if err != nil {
     return -1, nil, err
   }
@@ -100,13 +99,13 @@ func resource<%= resource_name -%>PatchCreateEncoder(d *schema.ResourceData, met
 
   // Return error if item already created.
   if found != nil {
-    return nil, fmt.Errorf("Unable to create <%= object.name %>, existing object already found: %+v", item)
+    return nil, fmt.Errorf("Unable to create <%= object.name %>, existing object already found: %+v", found)
   }
 
   // Return list with the resource to create appended
   return map[string]interface{}{
     "<%= list_key %>": append(currItems, obj),
-  }, nil 
+  }, nil
 }
 
 // PatchUpdateEncoder handles creating request data to PATCH parent resource
