@@ -809,6 +809,8 @@ resource "google_cloudfunctions_function" "function" {
   }
   max_instances = 10
   vpc_connector = google_vpc_access_connector.connector.self_link
+
+  depends_on = [google_project_iam_member.project]
 }
 `, projectNumber, vpcConnectorName, bucketName, zipFilePath, functionName)
 }
