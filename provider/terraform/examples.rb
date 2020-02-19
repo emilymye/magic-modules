@@ -163,13 +163,13 @@ module Provider
         #   - "%{my_var}" for overrides that have custom Golang values
         rand_vars = vars.map do |k, v|
           # Some resources only allow underscores.
-          testv = if v.include?('-')
-                    "tf-test-#{v}"
-                  elsif v.include?('_')
+          testv = if v.include?('_')
                     "tf_test_#{v}"
-                  else
-                    # Some vars like descriptions shouldn't have prefix
+                  elsif v.include?(' ')
+                    # Text blob vars like descriptions shouldn't have prefix
                     v
+                  else
+                    "tf-test-_#{v}"
                   end
           # Random suffix is 10 characters and standard name length <= 64
           testv = "#{testv[0...54]}%{random_suffix}"
