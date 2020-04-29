@@ -684,6 +684,7 @@ overrides: !ruby/object:Overrides::ResourceOverrides
         min_version: beta
         primary_resource_id: "default"
         vars:
+          igm_name: "igm-internal"
           forwarding_rule_name: "global-rule"
           http_proxy_name: "target-proxy"
           backend_service_name: "backend"
