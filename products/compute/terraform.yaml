@@ -578,6 +578,7 @@ overrides: !ruby/object:Overrides::ResourceOverrides
           region_backend_service_name: "website-backend"
           region_health_check_name: "website-hc"
           network_name: "website-net"
+          rigm_name: "rigm-internal"
           fw_name: "website-fw"
     custom_code: !ruby/object:Provider::Terraform::CustomCode
       post_create: templates/terraform/post_create/labels.erb
