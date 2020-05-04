@@ -118,6 +118,7 @@ func testGoogleHealthcareFhirStore_basic(fhirStoreName, datasetName string) stri
 resource "google_healthcare_fhir_store" "default" {
   name     = "%s"
   dataset  = google_healthcare_dataset.dataset.id
+  version = "STU3"
 
   enable_update_create          = false
   disable_referential_integrity = false
@@ -137,6 +138,7 @@ func testGoogleHealthcareFhirStore_update(fhirStoreName, datasetName, pubsubTopi
 resource "google_healthcare_fhir_store" "default" {
   name     = "%s"
   dataset  = google_healthcare_dataset.dataset.id
+  version = "STU3"
 
   enable_update_create = true
 

@@ -252,6 +252,7 @@ resource "google_healthcare_dataset" "dataset" {
 resource "google_healthcare_fhir_store" "fhir_store" {
   dataset  = google_healthcare_dataset.dataset.id
   name     = "%s"
+  version = "R4"
 }
 
 resource "google_healthcare_fhir_store_iam_binding" "foo" {
@@ -277,11 +278,13 @@ resource "google_service_account" "test_account_2" {
 resource "google_healthcare_dataset" "dataset" {
   location = "us-central1"
   name     = "%s"
+  version = "R4"
 }
 
 resource "google_healthcare_fhir_store" "fhir_store" {
   dataset  = google_healthcare_dataset.dataset.id
   name     = "%s"
+  version = "R4"
 }
 
 resource "google_healthcare_fhir_store_iam_binding" "foo" {
@@ -310,6 +313,7 @@ resource "google_healthcare_dataset" "dataset" {
 resource "google_healthcare_fhir_store" "fhir_store" {
   dataset  = google_healthcare_dataset.dataset.id
   name     = "%s"
+  version = "R4"
 }
 
 resource "google_healthcare_fhir_store_iam_member" "foo" {
@@ -335,6 +339,7 @@ resource "google_healthcare_dataset" "dataset" {
 resource "google_healthcare_fhir_store" "fhir_store" {
   dataset  = google_healthcare_dataset.dataset.id
   name     = "%s"
+  version = "R4"
 }
 
 data "google_iam_policy" "foo" {
