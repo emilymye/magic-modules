@@ -712,6 +712,49 @@ func nodePoolUpdate(d *schema.ResourceData, meta interface{}, nodePoolInfo *Node
 			log.Printf("[INFO] Updated image type in Node Pool %s", d.Id())
 		}
 
+<% unless version == 'ga' -%>
+		if d.HasChange(prefix + "node_config.0.workload_metadata_config") {
+			var workloadCfg *containerBeta.WorkloadIdentityConfig
+			if v, ok := d.GetOk(prefix + "node_config.0.workload_metadata_config"); ok {
+				workloadCfg = expandWorkloadIdentityConfig(v)
+			} else {
+				// Because GKE uses a non-RESTful update function, when removing the
+				// feature you need to specify a fairly full request body or it fails:
+				// "update": {"desiredWorkloadIdentityConfig": {"identityNamespace": ""}}
+				workloadCfg = &containerBeta.WorkloadIdentityConfig{
+					IdentityNamespace: "",
+					ForceSendFields:   []string{"IdentityNamespace"},
+				}
+			}
+			req := &containerBeta.UpdateClusterRequest{
+				Update: &containerBeta.ClusterUpdate{
+					DesiredNodePoolId: name,
+					DesiredWorkloadIdentityConfig: workloadCfg,
+				},
+			}
+
+			updateF := func() error {
+				op, err := config.clientContainerBeta.Projects.Locations.Clusters.Update(nodePoolInfo.parent(), req).Do()
+				if err != nil {
+					return err
+				}
+
+				// Wait until it's updated
+				return containerOperationWait(config, op,
+					nodePoolInfo.project,
+					nodePoolInfo.location, "updating GKE node pool",
+					timeout)
+			}
+
+			// Call update serially.
+			if err := lockedCall(lockKey, updateF); err != nil {
+				return err
+			}
+
+			log.Printf("[INFO] Updated workload metadata config type in Node Pool %s", d.Id())
+		}
+
+<% end -%>
 		if prefix == "" {
 			d.SetPartial("node_config")
 		}

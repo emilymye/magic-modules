@@ -790,7 +790,20 @@ func TestAccContainerCluster_withWorkloadMetadataConfig(t *testing.T) {
 		CheckDestroy: testAccCheckContainerClusterDestroyProducer(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerCluster_withWorkloadMetadataConfig(clusterName),
+				Config: testAccContainerCluster_withWorkloadMetadataConfig(clusterName, "SECURE"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("google_container_cluster.with_workload_metadata_config",
+						"node_config.0.workload_metadata_config.0.node_metadata", "SECURE"),
+				),
+			},
+			{
+				ResourceName:			 "google_container_cluster.with_workload_metadata_config",
+				ImportState:			 	true,
+				ImportStateVerify:	true,
+				ImportStateVerifyIgnore: []string{"min_master_version"},
+			},
+			{
+				Config: testAccContainerCluster_withWorkloadMetadataConfig(clusterName, "EXPOSE"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("google_container_cluster.with_workload_metadata_config",
 						"node_config.0.workload_metadata_config.0.node_metadata", "SECURE"),
@@ -799,7 +812,7 @@ func TestAccContainerCluster_withWorkloadMetadataConfig(t *testing.T) {
 			{
 				ResourceName:			 "google_container_cluster.with_workload_metadata_config",
 				ImportState:			 true,
-				ImportStateVerify:		 true,
+				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{"min_master_version"},
 			},
 		},
@@ -1487,6 +1500,14 @@ func TestAccContainerCluster_withWorkloadIdentityConfig(t *testing.T) {
 			},
 			{
 				Config: testAccContainerCluster_updateWorkloadMetadataConfig(pid, clusterName, "SECURE"),
+			},
+			{
+				ResourceName:        "google_container_cluster.with_workload_identity_config",
+				ImportState:         true,
+				ImportStateVerify:   true,
+			},
+			{
+				Config: testAccContainerCluster_updateWorkloadMetadataConfig(pid, clusterName, "EXPOSE"),
 			},
 			{
 				ResourceName:        "google_container_cluster.with_workload_identity_config",
@@ -2607,7 +2628,7 @@ resource "google_container_cluster" "with_node_config" {
 }
 
 <% unless version.nil? || version == 'ga' -%>
-func testAccContainerCluster_withWorkloadMetadataConfig(clusterName string) string {
+func testAccContainerCluster_withWorkloadMetadataConfig(clusterName, workloadMetadataConfig string) string {
 	return fmt.Sprintf(`
 data "google_container_engine_versions" "central1a" {
   location = "us-central1-a"
@@ -2626,11 +2647,11 @@ resource "google_container_cluster" "with_workload_metadata_config" {
     ]
 
     workload_metadata_config {
-      node_metadata = "SECURE"
+      node_metadata = "%s"
     }
   }
 }
-`, clusterName)
+`, clusterName, workloadMetadataConfig)
 }
 
 func testAccContainerCluster_updateWorkloadMetadataConfig(projectID string, clusterName string, workloadMetadataConfig string) string {

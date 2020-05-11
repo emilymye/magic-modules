@@ -175,10 +175,27 @@ func TestAccContainerNodePool_withWorkloadMetadataConfig(t *testing.T) {
 		CheckDestroy: testAccCheckContainerClusterDestroyProducer(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccContainerNodePool_withWorkloadMetadataConfig(cluster, np),
+				Config: testAccContainerNodePool_withWorkloadMetadataConfig(cluster, np, "SECURE"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("google_container_node_pool.with_workload_metadata_config",
 						"node_config.0.workload_metadata_config.0.node_metadata", "SECURE"),
+				),
+			},
+			{
+				ResourceName:      "google_container_node_pool.with_workload_metadata_config",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Import always uses the v1 API, so beta features don't get imported.
+				ImportStateVerifyIgnore: []string{
+					"node_config.0.workload_metadata_config.#",
+					"node_config.0.workload_metadata_config.0.node_metadata",
+				},
+			},
+			{
+				Config: testAccContainerNodePool_withWorkloadMetadataConfig(cluster, np, "EXPOSE"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("google_container_node_pool.with_workload_metadata_config",
+						"node_config.0.workload_metadata_config.0.node_metadata", "EXPOSE"),
 				),
 			},
 			{
@@ -1169,7 +1186,7 @@ resource "google_container_node_pool" "np_with_node_config" {
 }
 
 <% unless version.nil? || version == 'ga' -%>
-func testAccContainerNodePool_withWorkloadMetadataConfig(cluster, np string) string {
+func testAccContainerNodePool_withWorkloadMetadataConfig(cluster, np, workloadMetadata string) string {
 	return fmt.Sprintf(`
 data "google_container_engine_versions" "central1a" {
   location = "us-central1-a"
@@ -1194,11 +1211,11 @@ resource "google_container_node_pool" "with_workload_metadata_config" {
     ]
 
     workload_metadata_config {
-      node_metadata = "SECURE"
+      node_metadata = "%s"
     }
   }
 }
-`, cluster, np)
+`, cluster, np, workloadMetadata)
 }
 
 func testAccContainerNodePool_withWorkloadMetadataConfig_gkeMetadataServer(projectID, cluster, np string) string {
